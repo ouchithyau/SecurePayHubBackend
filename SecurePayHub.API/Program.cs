@@ -5,13 +5,19 @@ using SecurePayHub.Application.Interfaces;
 using SecurePayHub.Application.Services;
 using SecurePayHub.Domain.Interfaces;
 using SecurePayHub.Infrastructure.Authentication;
+using SecurePayHub.Infrastructure.Caching;
 using SecurePayHub.Infrastructure.Data;
 using SecurePayHub.Infrastructure.Repositories;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
 
 // 1. PostgreSQL Database Configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -25,6 +31,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 // 3. JWT Authentication Setup
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

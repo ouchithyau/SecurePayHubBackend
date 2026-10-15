@@ -19,11 +19,18 @@ namespace SecurePayHub.API.Controllers
         }
 
         [HttpPost("products")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
         {
             var product = await _orderService.CreateProductAsync(request);
             return Ok(product);
+        }
+
+        [HttpGet("products")]
+        public async Task<IActionResult> GetProducts()
+        {
+            var products = await _orderService.GetAllProductsAsync();
+            return Ok(new { source = "Redis Cache 🚀 / DB", data = products });
         }
 
         [HttpPost("orders")]
@@ -32,7 +39,6 @@ namespace SecurePayHub.API.Controllers
         {
             try
             {
-                
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (userIdClaim == null) return Unauthorized();
 

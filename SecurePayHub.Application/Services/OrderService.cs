@@ -1,18 +1,24 @@
 ﻿using SecurePayHub.Application.DTOs;
+using SecurePayHub.Application.Interfaces;
 using SecurePayHub.Domain.Entities;
 using SecurePayHub.Domain.Interfaces;
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+
 
 namespace SecurePayHub.Application.Services
 {
     public class OrderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
-        public OrderService(IUnitOfWork unitOfWork)
+        public OrderService(IUnitOfWork unitOfWork, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
         }
 
         public async Task<Product> CreateProductAsync(CreateProductRequest request)
@@ -26,7 +32,23 @@ namespace SecurePayHub.Application.Services
 
             await _unitOfWork.Products.AddAsync(product);
             await _unitOfWork.CompleteAsync();
+            await _cacheService.RemoveCacheAsync("products_list");
             return product;
+        }
+
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
+        {
+            const string cacheKey = "products_list";
+
+          
+            var cachedData = await _cacheService.GetCacheAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                return JsonSerializer.Deserialize<IEnumerable<Product>>(cachedData) ?? new List<Product>();
+            }
+
+            
+            return new List<Product>();
         }
 
         public async Task<string> CreateOrderAsync(int userId, CreateOrderRequest request)
