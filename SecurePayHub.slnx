@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SecurePayHub.API/SecurePayHub.API.csproj" />
+  <Project Path="SecurePayHub.Application/SecurePayHub.Application.csproj" />
+  <Project Path="SecurePayHub.Domain/SecurePayHub.Domain.csproj" />
+  <Project Path="SecurePayHub.Infrastructure/SecurePayHub.Infrastructure.csproj" />
+</Solution>
