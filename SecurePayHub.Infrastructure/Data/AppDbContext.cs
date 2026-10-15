@@ -10,5 +10,7 @@ namespace SecurePayHub.Infrastructure.Data
         }
 
         public DbSet<User> Users => Set<User>();
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<Order> Orders => Set<Order>();
     }
 }
