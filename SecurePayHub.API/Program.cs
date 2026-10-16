@@ -75,13 +75,27 @@ builder.Services.AddMassTransit(x =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddSignalR();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); 
+    });
+});
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("AllowAll");
 
 app.MapControllers();
+app.MapHub<SecurePayHub.API.Hubs.NotificationHub>("/hubs/notifications");
 
 app.Run();
