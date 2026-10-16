@@ -1,5 +1,7 @@
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.IdentityModel.Tokens;
 using SecurePayHub.Application.Interfaces;
 using SecurePayHub.Application.Services;
@@ -8,7 +10,6 @@ using SecurePayHub.Infrastructure.Authentication;
 using SecurePayHub.Infrastructure.Caching;
 using SecurePayHub.Infrastructure.Data;
 using SecurePayHub.Infrastructure.Repositories;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,6 +55,22 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
+});
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<SecurePayHub.API.Consumers.OrderCreatedConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
 });
 
 builder.Services.AddAuthorization();

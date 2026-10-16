@@ -1,11 +1,13 @@
-﻿using SecurePayHub.Application.DTOs;
+﻿using MassTransit;
+using SecurePayHub.Application.Contracts;
+using SecurePayHub.Application.DTOs;
 using SecurePayHub.Application.Interfaces;
 using SecurePayHub.Domain.Entities;
 using SecurePayHub.Domain.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 
 namespace SecurePayHub.Application.Services
@@ -14,11 +16,13 @@ namespace SecurePayHub.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICacheService _cacheService;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public OrderService(IUnitOfWork unitOfWork, ICacheService cacheService)
+        public OrderService(IUnitOfWork unitOfWork, ICacheService cacheService, IPublishEndpoint publishEndpoint)
         {
             _unitOfWork = unitOfWork;
             _cacheService = cacheService;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<Product> CreateProductAsync(CreateProductRequest request)
@@ -87,6 +91,16 @@ namespace SecurePayHub.Application.Services
 
 
                 await _unitOfWork.CommitTransactionAsync();
+                await _publishEndpoint.Publish<OrderCreatedEvent>(new
+                {
+                    OrderId = order.Id,
+                    UserId = userId,
+                    request.ProductId,
+                    request.Quantity,
+                    order.TotalPrice,
+                    CreatedAt = DateTime.UtcNow
+                });
+
                 return "Order placed successfully!";
             }
             catch (Exception)
