@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: securepay_postgres
     environment:
-      POSTGRES_DB: SecurePayDb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_password
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: SecurePayHubDb
     ports:
       - "5432:5432"
     volumes:
@@ -24,7 +24,7 @@ services:
       - securepay-net
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management-alpine
     container_name: securepay_rabbitmq
     ports:
       - "5672:5672"
@@ -34,19 +34,29 @@ services:
 
   api:
     build:
-      context: .
+      context: ./SecurePayHubBackend
       dockerfile: SecurePayHub.API/Dockerfile
     container_name: securepay_api
-    ports:
-      - "5214:8080"
-    environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=SecurePayDb;Username=postgres;Password=your_password
-      - ConnectionStrings__Redis=redis:6379
-      - 뺙RabbitMQ__Host=rabbitmq
     depends_on:
       - postgres
       - redis
       - rabbitmq
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=SecurePayHubDb;Username=postgres;Password=password123
+      - ConnectionStrings__Redis=redis:6379
+      - RabbitMQ__Host=rabbitmq
+    networks:
+      - securepay-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: securepay_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
     networks:
       - securepay-net
 
@@ -55,4 +65,3 @@ volumes:
 
 networks:
   securepay-net:
-    driver: bridge
