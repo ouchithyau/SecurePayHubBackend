@@ -40,5 +40,5 @@ namespace SecurePayHub.API.Consumers
             });
             await Task.CompletedTask;
         }
-    }
+    }   
 }

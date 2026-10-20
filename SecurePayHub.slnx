@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path="dotnet.yml" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="docker-compose.yml" />
   </Folder>
@@ -6,4 +10,5 @@
   <Project Path="SecurePayHub.Application/SecurePayHub.Application.csproj" />
   <Project Path="SecurePayHub.Domain/SecurePayHub.Domain.csproj" />
   <Project Path="SecurePayHub.Infrastructure/SecurePayHub.Infrastructure.csproj" />
+  <Project Path="SecurePayHub.UnitTests/SecurePayHub.UnitTests.csproj" />
 </Solution>
